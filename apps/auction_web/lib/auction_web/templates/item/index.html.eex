@@ -1,3 +1,5 @@
+<%= link "Create Item", to: Routes.item_path(@conn, :new) %>
+
 <ul>
   <%= for item <- @items do %>
     <li>
