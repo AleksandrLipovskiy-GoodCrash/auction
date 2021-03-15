@@ -17,3 +17,5 @@ config :auction, Auction.Repo,
   database: "auction_test#{System.get_env("MIX_TEST_PARTITION")}",
   hostname: "localhost",
   pool: Ecto.Adapters.SQL.Sandbox
+
+config :logger, level: :info
