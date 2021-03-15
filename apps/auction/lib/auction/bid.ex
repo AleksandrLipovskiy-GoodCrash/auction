@@ -21,14 +21,21 @@ defmodule Auction.Bid do
   end
 
   defp validate_amount(%Ecto.Changeset{changes: %{amount: amount, item_id: item_id}} = changeset) do
-    last_bid = Auction.get_last_bid_for_item(item_id)
+    last_bid = 
+      case Auction.get_last_bid_for_item(item_id) do
+        bid ->
+          bid.amount
+
+        nil -> 0
+      end
+
     auction_ends_at = Auction.get_item(item_id).ends_at
 
     cond do
       amount <= 0 ->
         add_error(changeset, :amount, "must be greater zero")
 
-      amount <= last_bid.amount ->
+      amount <= last_bid ->
         add_error(changeset, :amount, "must be greater than the last bet amount")
 
       DateTime.compare(auction_ends_at, DateTime.utc_now()) == :lt ->

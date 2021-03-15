@@ -5,14 +5,21 @@ defmodule AuctionWeb.BidController do
 
   def create(conn, %{"bid" => %{"amount" => amount}, "item_id" => item_id}) do
     user_id = conn.assigns.current_user.id
+    username = conn.assigns.current_user.username
 
     case Auction.insert_bid(%{amount: amount, item_id: item_id, user_id: user_id}) do
       {:ok, bid} ->
+        html = Phoenix.View.render_to_string(AuctionWeb.BidView, "bid.html", bid: bid, username: username)
+        
+        AuctionWeb.Endpoint.broadcast("item:#{item_id}", "new_bid", %{body: html})
         redirect(conn, to: Routes.item_path(conn, :show, bid.item_id))
 
       {:error, bid} ->
         item = Auction.get_item_with_bids(item_id)
-        render(conn, AuctionWeb.ItemView, "show.html", item: item, bid: bid)
+
+        conn
+        |> put_view(AuctionWeb.ItemView)
+        |> render(:show, item: item, bid: bid)
     end
   end
 
