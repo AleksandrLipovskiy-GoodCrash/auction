@@ -7,6 +7,8 @@ defmodule Auction.Item do
     field :description, :string
     field :ends_at, :utc_datetime
 
+    has_many :bids, Auction.Bid
+
     timestamps()
   end
 

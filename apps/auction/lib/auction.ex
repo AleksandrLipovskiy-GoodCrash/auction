@@ -1,5 +1,7 @@
 defmodule Auction do
-  alias Auction.{Item, Repo, User, Password}
+  import Ecto.Query
+
+  alias Auction.{Bid, Item, User, Password}
 
   @repo Auction.Repo
 
@@ -13,6 +15,12 @@ defmodule Auction do
 
   def get_item_by(attrs) do
     @repo.get_by(Item, attrs)
+  end
+
+  def get_item_with_bids(id) do
+    id
+    |> get_item()
+    |> @repo.preload(bids: [:user])
   end
 
   def insert_item(attrs) do
@@ -34,6 +42,35 @@ defmodule Auction do
   def edit_item(id) do
     get_item(id)
     |> Item.changeset()
+  end
+
+  def new_bid, do: Bid.changeset(%Bid{})
+
+  def insert_bid(params) do
+    %Bid{}
+    |> Bid.changeset(params)
+    |> @repo.insert
+  end
+
+  def get_bids_for_user(user) do
+    query =
+      from b in Bid,
+      where: b.user_id == ^user.id,
+      order_by: [desc: :inserted_at],
+      preload: :item,
+      limit: 10
+
+    @repo.all(query)
+  end
+
+  def get_last_bid_for_item(item_id) do
+    query =
+      from b in Bid,
+      where: b.item_id == ^item_id
+
+    query
+    |> last(:inserted_at)
+    |> @repo.one
   end
 
   def get_user(id), do: @repo.get!(User, id)
